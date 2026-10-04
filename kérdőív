@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kérdőív a telefonos rendszer működéséről</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #E9EFF0;
+    --surface: #FFFFFF;
+    --ink: #16232B;
+    --muted: #586972;
+    --line: #C9D4D8;
+    --accent: #0F6E6E;
+    --accent-soft: #DCEFEE;
+    --alert: #B3361B;
+    --alert-soft: #FBE9E4;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #101A1F;
+      --surface: #18262D;
+      --ink: #E8EEF0;
+      --muted: #9DB0B8;
+      --line: #2F424B;
+      --accent: #5CC4BF;
+      --accent-soft: #1C3B3D;
+      --alert: #F08A70;
+      --alert-soft: #3A211B;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-padding-top: 4.5rem; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Figtree", "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+    font-size: 1.0625rem;
+    line-height: 1.5;
+  }
+  .progress {
+    position: sticky; top: 0; z-index: 5;
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+  }
+  .progress-inner {
+    max-width: 44rem; margin: 0 auto; padding: .7rem 1.25rem;
+    display: flex; align-items: center; gap: 1rem;
+    font-size: .9rem; color: var(--muted);
+  }
+  .track { flex: 1; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+  .fill { height: 100%; width: 0; background: var(--accent); transition: width .25s ease; }
+  main { max-width: 44rem; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
+  h1 { font-size: clamp(1.9rem, 5vw, 2.6rem); line-height: 1.12; letter-spacing: -.02em; margin: 0 0 .9rem; font-weight: 700; }
+  .lead { color: var(--muted); margin: 0 0 2.5rem; max-width: 36rem; }
+  h2 {
+    font-size: 1.2rem; font-weight: 700; margin: 2.75rem 0 1rem;
+    padding-bottom: .5rem; border-bottom: 2px solid var(--ink);
+  }
+  fieldset.q {
+    border: 0; margin: 0 0 1rem; padding: 1.25rem 1.25rem 1.35rem;
+    background: var(--surface); border-radius: 10px;
+    border-left: 4px solid transparent;
+  }
+  fieldset.q.missing { border-left-color: var(--alert); background: var(--alert-soft); }
+  legend { float: left; width: 100%; padding: 0; margin-bottom: .9rem; font-weight: 600; }
+  legend + * { clear: both; }
+  .num { color: var(--accent); margin-right: .35rem; }
+  .opt-note { font-weight: 400; color: var(--muted); font-size: .9rem; margin-left: .25rem; }
+  .options { display: grid; gap: .45rem; }
+  label.option {
+    display: flex; align-items: center; gap: .75rem;
+    padding: .5rem .65rem; border: 1px solid var(--line); border-radius: 8px;
+    cursor: pointer;
+  }
+  label.option input { position: absolute; opacity: 0; pointer-events: none; }
+  .key {
+    flex: none; width: 2rem; height: 2rem; display: grid; place-items: center;
+    border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 7px;
+    font-weight: 700; font-size: .95rem; color: var(--muted); background: var(--bg);
+  }
+  label.option:hover { border-color: var(--accent); }
+  label.option:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+  label.option:has(input:checked) .key {
+    background: var(--accent); border-color: var(--accent); color: var(--surface);
+    border-bottom-width: 1px; transform: translateY(2px);
+  }
+  label.option:has(input:focus-visible) { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .follow { margin-top: 1rem; }
+  .follow > span { display: block; font-size: .95rem; color: var(--muted); margin-bottom: .4rem; }
+  input[type="text"], textarea {
+    width: 100%; font: inherit; color: var(--ink);
+    background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
+    padding: .6rem .75rem;
+  }
+  fieldset.q.missing input[type="text"], fieldset.q.missing textarea { background: var(--surface); }
+  textarea { min-height: 6.5rem; resize: vertical; }
+  input[type="text"]:focus-visible, textarea:focus-visible, button:focus-visible {
+    outline: 3px solid var(--accent); outline-offset: 2px;
+  }
+  .hp { position: absolute; left: -9999px; }
+  .send { margin-top: 2rem; }
+  button {
+    font: inherit; font-weight: 600; cursor: pointer;
+    background: var(--accent); color: var(--surface);
+    border: 0; border-radius: 8px; padding: .85rem 1.5rem;
+  }
+  button[disabled] { opacity: .6; cursor: progress; }
+  .status { margin: 1rem 0 0; color: var(--alert); font-weight: 500; min-height: 1.5em; }
+  .done { background: var(--surface); border-radius: 10px; padding: 2rem 1.5rem; }
+  .done h2 { border: 0; margin: 0 0 .5rem; padding: 0; font-size: 1.5rem; }
+  .done p { margin: 0; color: var(--muted); }
+  @media (prefers-reduced-motion: reduce) { .fill { transition: none; } }
+</style>
+</head>
+<body>
+
+<div class="progress" aria-hidden="true">
+  <div class="progress-inner">
+    <div class="track"><div class="fill" id="fill"></div></div>
+    <span id="count">0 / 15 megválaszolva</span>
+  </div>
+</div>
+
+<main>
+  <h1>Kérdőív a telefonos rendszer működéséről</h1>
+  <p class="lead">A válaszaid alapján tárjuk fel, hol hibázik a hívásirányítás. A kitöltés névtelen, és körülbelül 5–10 percet vesz igénybe.</p>
+
+  <form id="form" novalidate>
+    <div id="questions"></div>
+    <input class="hp" type="text" id="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+    <div class="send">
+      <button type="submit" id="send">Válaszok elküldése</button>
+      <p class="status" id="status" role="alert"></p>
+    </div>
+  </form>
+</main>
+
+<script>
+// ---- Beállítások ----
+var EMAIL = "egyetem.bm@gmail.com";
+var ENDPOINT = "https://formsubmit.co/ajax/" + EMAIL;
+
+var FREQ = ["Soha", "Hetente néhányszor", "Naponta 1–2 alkalommal", "Naponta többször"];
+
+var SECTIONS = [
+  { title: "A hibás kiosztás feltárása", questions: [
+    { label: "1. Téves hívások tízből", text: "Tíz beérkező hívásból nagyjából hány érkezik rossz helyre, vagyis nem a te területedre?",
+      type: "radio", required: true, options: ["0–1", "2–3", "4–5", "6 vagy több"] },
+    { label: "2. Téves hívások forrása", text: "Melyik menüpontból vagy témából érkeznek leggyakrabban a téves hívások?",
+      type: "text" },
+    { label: "3. Továbbkapcsolás gyakorisága", text: "Milyen gyakran kell továbbkapcsolnod egy hívást, és jellemzően hová?",
+      type: "radio", required: true, options: FREQ,
+      follow: [{ label: "3. Továbbkapcsolás célja", text: "Jellemzően ide kapcsolom tovább:", type: "text" }] },
+    { label: "4. Többszöri átkapcsolás", text: "Előfordul, hogy az ügyfél többszöri átkapcsolás után kerül hozzád? Milyen gyakran?",
+      type: "radio", required: true, options: FREQ }
+  ]},
+  { title: "Az IVR menü", questions: [
+    { label: "5. Ügyfelek véleménye a menüről", text: "Mit mondanak az ügyfelek a menüről?", note: "több válasz is jelölhető",
+      type: "check", options: ["Túl hosszú", "Nem érthetők a menüpontok", "Nincs az ügyüknek megfelelő opció", "Túl sok a menüszint", "Nehéz élő ügyintézőhöz jutni", "Nem szoktak megjegyzést tenni"],
+      follow: [{ label: "5. Egyéb vélemény", text: "Egyéb:", type: "text" }] },
+    { label: "6. Hiányzó menüpontok", text: "Mely ügytípusokhoz nincs megfelelő menüpont?",
+      type: "textarea" },
+    { label: "7. Találomra választás", text: "Milyen gyakran választanak az ügyfelek találomra, csak hogy élő ügyintézőhöz jussanak?",
+      type: "radio", required: true, options: FREQ },
+    { label: "8. Ügyféladatok átadása", text: "Megkapod a hívás előtt az ügyfél által megadott adatokat, vagy újra el kell kérned őket?",
+      type: "radio", required: true, options: ["Mindig megkapom", "Többnyire megkapom", "Ritkán kapom meg", "Soha, mindig újra el kell kérnem"] }
+  ]},
+  { title: "Hatás a munkára és az ügyfelekre", questions: [
+    { label: "9. Téves hívásokra fordított idő", text: "Mennyi időt visz el egy átlagos napon a téves hívások kezelése?",
+      type: "radio", required: true, options: ["Kevesebb mint 15 perc", "15–30 perc", "30–60 perc", "Több mint 1 óra"] },
+    { label: "10. Ingerült ügyfelek", text: "Milyen gyakran kezdik a hívást ingerülten az ügyfelek a várakozás vagy az átkapcsolások miatt?",
+      type: "radio", required: true, options: FREQ },
+    { label: "11. Megszakadt hívások", text: "Előfordulnak megszakadt vagy elveszett hívások továbbkapcsoláskor?",
+      type: "radio", required: true, options: FREQ }
+  ]},
+  { title: "Műszaki működés", questions: [
+    { label: "12. Technikai hibák gyakorisága", text: "Milyen gyakran tapasztalsz technikai hibát?",
+      type: "radio", required: true, options: FREQ,
+      follow: [
+        { label: "12. Jellemző hibák", text: "Jellemző hibák (több is jelölhető):", type: "check", options: ["Fagyás", "Rossz hangminőség", "Hibás státuszjelzés"] },
+        { label: "12. Egyéb hiba", text: "Egyéb hiba:", type: "text" }
+      ] },
+    { label: "13. Státuszkezelés", text: "A rendszer helyesen kezeli a státuszodat (szabad, foglalt, szünet)?",
+      type: "radio", required: true, options: ["Igen, mindig", "Többnyire igen", "Gyakran hibásan", "Nem"],
+      follow: [{ label: "13. Státuszhiba leírása", text: "Ha hibásan, mi történik ilyenkor?", type: "text" }] }
+  ]},
+  { title: "Nyitott kérdések", questions: [
+    { label: "14. Amit változtatnál", text: "Ha egyetlen dolgot változtathatnál a rendszeren, mi lenne az?",
+      type: "textarea" },
+    { label: "15. Konkrét eset", text: "Írj le egy közelmúltbeli konkrét esetet, amikor a rendszer rosszul irányított egy hívást!",
+      type: "textarea" }
+  ]}
+];
+
+// ---- Űrlap felépítése ----
+var fieldSeq = 0;
+var fields = [];      // { label, type, name | el }
+var questionEls = []; // { el, required, names }
+
+function el(tag, attrs, text) {
+  var e = document.createElement(tag);
+  if (attrs) for (var k in attrs) e.setAttribute(k, attrs[k]);
+  if (text != null) e.textContent = text;
+  return e;
+}
+
+function buildControl(def, describedBy) {
+  var name = "f" + (++fieldSeq);
+  var wrap;
+  if (def.type === "radio" || def.type === "check") {
+    wrap = el("div", { "class": "options" });
+    def.options.forEach(function (opt, i) {
+      var lab = el("label", { "class": "option" });
+      var inp = el("input", { type: def.type === "radio" ? "radio" : "checkbox", name: name, value: opt });
+      lab.appendChild(inp);
+      lab.appendChild(el("span", { "class": "key", "aria-hidden": "true" }, String(i + 1)));
+      lab.appendChild(el("span", null, opt));
+      wrap.appendChild(lab);
+    });
+  } else if (def.type === "textarea") {
+    wrap = el("textarea", { name: name, "aria-labelledby": describedBy });
+  } else {
+    wrap = el("input", { type: "text", name: name, "aria-labelledby": describedBy });
+  }
+  fields.push({ label: def.label, type: def.type, name: name });
+  return { node: wrap, name: name };
+}
+
+var container = document.getElementById("questions");
+var qNumber = 0;
+SECTIONS.forEach(function (sec) {
+  container.appendChild(el("h2", null, sec.title));
+  sec.questions.forEach(function (q) {
+    qNumber++;
+    var fs = el("fieldset", { "class": "q" });
+    var legendId = "q" + qNumber;
+    var legend = el("legend", { id: legendId });
+    legend.appendChild(el("span", { "class": "num" }, qNumber + "."));
+    legend.appendChild(document.createTextNode(q.text));
+    var note = q.note || (q.required ? "" : "nem kötelező");
+    if (note) legend.appendChild(el("span", { "class": "opt-note" }, "(" + note + ")"));
+    fs.appendChild(legend);
+
+    var names = [];
+    var main = buildControl(q, legendId);
+    fs.appendChild(main.node);
+    names.push(main.name);
+
+    (q.follow || []).forEach(function (f, i) {
+      var box = el("div", { "class": "follow" });
+      var capId = legendId + "f" + i;
+      box.appendChild(el("span", { id: capId }, f.text));
+      var c = buildControl(f, capId);
+      box.appendChild(c.node);
+      names.push(c.name);
+      fs.appendChild(box);
+    });
+
+    container.appendChild(fs);
+    questionEls.push({ el: fs, required: !!q.required, mainName: main.name, names: names });
+  });
+});
+
+// ---- Válaszok kiolvasása ----
+var form = document.getElementById("form");
+
+function valueOf(name) {
+  var nodes = form.querySelectorAll('[name="' + name + '"]');
+  if (!nodes.length) return "";
+  var first = nodes[0];
+  if (first.type === "radio" || first.type === "checkbox") {
+    var picked = [];
+    nodes.forEach(function (n) { if (n.checked) picked.push(n.value); });
+    return picked.join(", ");
+  }
+  return first.value.trim();
+}
+
+function updateProgress() {
+  var answered = 0;
+  questionEls.forEach(function (q) {
+    var any = q.names.some(function (n) { return valueOf(n) !== ""; });
+    if (any) answered++;
+    if (q.required && valueOf(q.mainName) !== "") q.el.classList.remove("missing");
+  });
+  document.getElementById("fill").style.width = (answered / questionEls.length * 100) + "%";
+  document.getElementById("count").textContent = answered + " / " + questionEls.length + " megválaszolva";
+}
+form.addEventListener("input", updateProgress);
+form.addEventListener("change", updateProgress);
+
+// ---- Küldés ----
+var statusEl = document.getElementById("status");
+var sendBtn = document.getElementById("send");
+
+form.addEventListener("submit", function (ev) {
+  ev.preventDefault();
+  statusEl.textContent = "";
+
+  var missing = questionEls.filter(function (q) { return q.required && valueOf(q.mainName) === ""; });
+  questionEls.forEach(function (q) { q.el.classList.remove("missing"); });
+  if (missing.length) {
+    missing.forEach(function (q) { q.el.classList.add("missing"); });
+    statusEl.textContent = missing.length + " kötelező kérdésre még nem válaszoltál. Pirossal jelöltük őket.";
+    missing[0].el.scrollIntoView({ behavior: "smooth", block: "start" });
+    return;
+  }
+  if (document.getElementById("hp").value) return; // robotok kiszűrése
+
+  var payload = {
+    _subject: "Kérdőív-válasz: telefonos rendszer",
+    _template: "table",
+    _captcha: "false"
+  };
+  fields.forEach(function (f) {
+    payload[f.label] = valueOf(f.name) || "–";
+  });
+
+  sendBtn.disabled = true;
+  sendBtn.textContent = "Küldés folyamatban…";
+
+  fetch(ENDPOINT, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Accept": "application/json" },
+    body: JSON.stringify(payload)
+  })
+    .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+    .then(function (r) {
+      if (!r.ok || String(r.data.success) !== "true") throw new Error(r.data && r.data.message || "hiba");
+      var done = el("div", { "class": "done", role: "status" });
+      done.appendChild(el("h2", null, "Válaszok elküldve"));
+      done.appendChild(el("p", null, "Köszönjük, hogy kitöltötted a kérdőívet. Bezárhatod az oldalt."));
+      form.replaceWith(done);
+      document.getElementById("fill").style.width = "100%";
+      window.scrollTo({ top: 0 });
+    })
+    .catch(function () {
+      sendBtn.disabled = false;
+      sendBtn.textContent = "Válaszok elküldése";
+      statusEl.textContent = "A válaszokat nem sikerült elküldeni. Ellenőrizd az internetkapcsolatot, és próbáld újra. A beírt válaszaid megmaradtak.";
+    });
+});
+
+updateProgress();
+</script>
+</body>
+</html>
